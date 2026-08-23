@@ -2,8 +2,10 @@ name: TurboTill Webhook Dispatch
 
 on:
   schedule:
-    # Every hour at minute 10 (UTC)
-    - cron: '10 * * * *'
+    # Every 5 minutes, to drain the webhook_events queue in small batches
+    # (each invocation only processes 5 events to stay under Vercel's 10s
+    # Hobby-plan function timeout)
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
