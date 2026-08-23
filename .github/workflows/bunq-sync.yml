@@ -1,0 +1,29 @@
+name: OmniSolo bunq Sync
+
+on:
+  schedule:
+    # Every hour at minute 5 (UTC)
+    - cron: '5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    concurrency:
+      group: omnisolo-bunq-sync
+      cancel-in-progress: false
+
+    steps:
+      - name: Trigger OmniSolo bank sync endpoint
+        env:
+          CRON_SECRET: ${{ secrets.OMNISOLO_CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "Missing required secret: OMNISOLO_CRON_SECRET"
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error \
+            -X POST "https://omnisolo.turbotill.app/api/bank/sync" \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            -H "Content-Type: application/json"
