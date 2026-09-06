@@ -25,7 +25,25 @@ jobs:
             echo "Missing required secret: TURBOTILL_CRON_SECRET"
             exit 1
           fi
-          curl --fail-with-body --silent --show-error \
+
+          # The cron's only job is to wake the endpoint. Endpoint-side errors
+          # (timeouts, 5xx, queue empty, etc.) are handled by TurboTill and
+          # should not spam repository owners with failure emails.
+          set +e
+          http_code=$(curl --silent --show-error \
+            -o /tmp/response.txt \
+            -w "%{http_code}" \
             -X POST "https://pos.turbotill.app/api/webhooks/process" \
             -H "Authorization: Bearer $CRON_SECRET" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json")
+          set -e
+
+          echo "HTTP status: $http_code"
+          if [ -s /tmp/response.txt ]; then
+            cat /tmp/response.txt
+          fi
+
+          if [ "$http_code" = "401" ]; then
+            echo "Unauthorized: check that TURBOTILL_CRON_SECRET matches the CRON_SECRET env var in Vercel"
+            exit 1
+          fi

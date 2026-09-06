@@ -13,9 +13,9 @@ business logic lives here.
 
 - `bunq-sync.yml` — hourly, calls OmniSolo's `POST /api/bank/sync`
   (matches incoming bunq payments against sent/overdue invoices).
-- `turbotill-webhook-dispatch.yml` — hourly, calls TurboTill's
-  `POST /api/webhooks/process` (delivers queued `webhook_events`, e.g.
-  retail sales, to subscribers like OmniSolo).
+- `turbotill-webhook-dispatch.yml` — every 5 minutes, calls TurboTill's
+  `POST /api/webhooks/process` (drains queued `webhook_events`, e.g.
+  retail sales, to subscribers like OmniSolo in small batches).
 
 ## Secrets
 
