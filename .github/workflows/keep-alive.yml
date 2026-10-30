@@ -1,0 +1,27 @@
+name: Keep repository active
+
+# GitHub auto-disables scheduled workflows after 60 days of repository
+# inactivity. Workflow runs don't count as activity, but commits do, so
+# this pushes an empty commit monthly to reset the clock for the real
+# cron workflows (bunq-sync, turbotill-webhook-dispatch).
+
+on:
+  schedule:
+    # Monthly on the 1st at 00:30 UTC
+    - cron: '30 0 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "Keep scheduled workflows alive"
+          git push
